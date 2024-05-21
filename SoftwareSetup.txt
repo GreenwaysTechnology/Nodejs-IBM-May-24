@@ -1,0 +1,15 @@
+
+
+Node arch
+Node programming
+npm 
+node frameworks
+ -express
+microservices implementation
+ -moleculer
+
+node js
+vs code 
+docker desktop or pod man
+
+
