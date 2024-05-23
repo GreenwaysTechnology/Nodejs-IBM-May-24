@@ -1,25 +1,19 @@
-const fs = require('node:fs')
-const path = require('node:path')
+const fs = require('node:fs');
+const path = require('node:path');
 
-const filePath = path.join(__dirname, 'assets/info.txt')
-const options = {
-    encoding: 'UTF-8'
+const inputfileName = path.join(__dirname, 'assets/big.file');
+//write
+const outputFileName = path.join(__dirname, 'assets/bigcopy.file');
+
+const config = {
+      encoding: 'UTF-8'
 }
-const inputStream = fs.createReadStream(filePath, options)
 
-//register listerns
-let data = ''
-inputStream.on('data', chunk => {
-    //console.log(chunk)
-    data += chunk
-})
-inputStream.on('end', () => {
-    console.log('end event is called')
-    console.log(data)
-})
-inputStream.on('close', () => {
-    console.log('close event is called')
-})
-inputStream.on('error', (err) => {
-    console.log('error event', err)
-})
+//Back pressure handling
+const readerStream = fs.createReadStream(inputfileName, config);
+const writeStr = fs.createWriteStream(outputFileName, config);
+
+//backPressure streams
+//pipe method is simplest method which wraps resume,pasuse,drain 
+readerStream.pipe(writeStr);
+
