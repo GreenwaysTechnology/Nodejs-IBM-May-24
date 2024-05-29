@@ -832,6 +832,227 @@ async function main() {
 
 }
 main()
+...
+
+Multi Methods:
+const { ServiceBroker } = require('moleculer')
+
+//create broker object 
+const broker = new ServiceBroker()
+
+//create service 
+broker.createService({
+    name: 'greeter', //service Name
+    actions: {
+        //service apis
+        sayHello() {
+            return 'Hello Micro service'
+        },
+        sayHai() {
+            return 'Hai Micro Service'
+        },
+        sayGreet() {
+            return 'Welcome to Microservices'
+        }
+    }
+})
+//deploy the service on Broker(Server)
+async function main() {
+    //start server
+    try {
+        await broker.start()
+        console.log('Service is ready')
+        //call service api 
+        const hello = await broker.call('greeter.sayHello')
+        const hai = await broker.call('greeter.sayHai')
+        const greeter = await broker.call('greeter.sayGreet')
+        console.log(hello, hai, greeter)
+    }
+    catch (err) {
+
+    }
+}
+main()
+...............................................................................
+
+Multi Service:
+const { ServiceBroker } = require('moleculer')
+
+//create broker object 
+const broker = new ServiceBroker()
+
+//create service 
+broker.createService({
+    name: 'customer', //service Name
+    actions: {
+        findAll() {
+            return [{
+                id: 1,
+                name: 'abc pvt ltd',
+                address: {
+                    city: 'HYD'
+                }
+            }]
+        }
+    }
+})
+
+broker.createService({
+    name: 'products',
+    actions: {
+        findAll() {
+            return [{ id: 1, name: 'Phone', qty: 100, price:1000 }]
+        }
+    }
+})
+//deploy the service on Broker(Server)
+async function main() {
+    //start server
+    try {
+        await broker.start()
+        console.log('Service is ready')
+        const customer = await broker.call('customer.findAll')
+        const products = await broker.call('products.findAll')
+        console.log(customer)
+        console.log(products)
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main()
+..........
+
+			    Service api parameters
+....................................................................................
+
+How to pass params to Service methods? How to read args from the service Method?
+
+Parameters are stored inside special object called "Context"
+
+Context Object:
+
+1.Similar to Broker Object
+2.It has all capacity of Broker object
+3.Context object is used inside service definitions , where ever you require broker
+  Object reference.
+
+context object already created, and its refernce is avaiable inside "Service method" as args.
+
+reading parameters
+
+1.context.params 
+  params are literal object what ever parameter we pass, it will inside this
+
+context.params.variable
+
+
+const { ServiceBroker } = require('moleculer')
+
+//create broker object 
+const broker = new ServiceBroker()
+
+//create service 
+broker.createService({
+    name: 'math', //service Name
+    actions: {
+        add(ctx) {
+            console.log(ctx.params)
+            const { a, b } = ctx.params
+            return a + b
+        }
+    }
+})
+
+
+//deploy the service on Broker(Server)
+async function main() {
+    //start server
+    try {
+        await broker.start()
+        console.log('Service is ready')
+        const res= await broker.call('math.add', { a: 10, b: 20 })
+        console.log(res)
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main()
+
+Error Response:
+..............
+
+code: 422,
+  type: 'VALIDATION_ERROR',
+  data: [
+    {
+      type: 'number',
+      message: "The 'a' field must be a number.",
+      field: 'a',
+      actual: 'abc',
+      nodeID: 'desktop-kaufcr7-15032',
+      action: 'math.add'
+    }
+  ],
+  retryable
+.....................................................................................
+....................................................................................
+		    Dynamic Parameters and dynamic invocation of services
+...................................................................................
+
+Moleculer has a tool called "Moleculer REPL"
+>npm install moleculer-repl --save-dev
+
+
+
+const { ServiceBroker } = require('moleculer')
+
+const broker = new ServiceBroker()
+
+broker.createService({
+    name: 'math',
+    actions: {
+        divide: {
+            //param validation logic
+            params: {
+                a: "number",
+                b: "number"
+            },
+            //biz logic 
+            handler(ctx) {
+                const a = ctx.params.a
+                const b = ctx.params.b
+                return a / b
+            }
+        }
+    }
+})
+
+
+async function main() {
+    try {
+        //start the broker 
+        await broker.start()
+        //use repl prompt
+        broker.repl()
+   
+    } catch (err) {
+        console.log(err)
+    }
+}
+main()
+
+mol $ call math.divide --a 10000 --b 234
+>> Call 'math.divide' with params: { a: 10000, b: 234 } with meta: { '$repl': true } with options: {}
+>> Execution time:4ms
+>> Response:
+42.73504273504273
+
+
+
+
+
 
 
 
